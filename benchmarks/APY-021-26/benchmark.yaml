@@ -1,0 +1,48 @@
+name: APY-021-26 Delegation Token Scope Escalation - API Key Service
+level: 3
+tags:
+  - api
+  - authorization
+  - scope
+  - delegation
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      Delegated token issuance does not enforce subset-of-caller scope rules
+      enabling privilege escalation through over-broad child scopes.
+
+x_apyguard:
+  category: delegation_token_scope_escalation
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  auth:
+    type: bearer_jwt
+    login_path: /api/auth/login
+    method: POST
+    request_content_type: application/json
+    credentials:
+      email: alice@example.com
+      password: alice123
+    token_response_path: access_token
+    token_type_response_path: token_type
+    authorization_header: Authorization
+    authorization_prefix: Bearer
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Delegation Token Scope Escalation
+    primary_endpoint: /api/keys/delegate
+    primary_method: POST
+
+  seed_users:
+    - email: alice@example.com
+      password: alice123
+      role: member
+
+  ports:
+    internal: 80
+    preferred_host: 18026

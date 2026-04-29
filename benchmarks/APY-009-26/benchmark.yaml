@@ -1,0 +1,29 @@
+name: APY-009-26 SSRF - Integration Fetch API
+level: 3
+tags:
+  - api
+  - ssrf
+  - integrations
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      Integration fetch endpoint accepts attacker-controlled URLs and allows backend access
+      to internal-only resources.
+
+x_apyguard:
+  category: ssrf
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  expected:
+    win_condition: flag
+    vulnerability_type: SSRF
+    primary_endpoint: /api/integrations/fetch
+    primary_method: POST
+
+  ports:
+    internal: 80
+    preferred_host: 18011

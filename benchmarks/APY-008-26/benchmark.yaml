@@ -1,0 +1,47 @@
+name: APY-008-26 Business Flow Abuse - Coupon API
+level: 2
+tags:
+  - api
+  - business_logic
+  - abuse
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      Coupon redemption logic does not enforce one-time usage or anti-automation
+      enabling repeated reward extraction.
+
+x_apyguard:
+  category: sensitive_business_flow_abuse
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  auth:
+    type: bearer_jwt
+    login_path: /api/auth/login
+    method: POST
+    request_content_type: application/json
+    credentials:
+      email: alice@example.com
+      password: alice123
+    token_response_path: access_token
+    token_type_response_path: token_type
+    authorization_header: Authorization
+    authorization_prefix: Bearer
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Sensitive Business Flow Abuse
+    primary_endpoint: /api/coupons/redeem
+    primary_method: POST
+
+  seed_users:
+    - email: alice@example.com
+      password: alice123
+      role: member
+
+  ports:
+    internal: 80
+    preferred_host: 18010

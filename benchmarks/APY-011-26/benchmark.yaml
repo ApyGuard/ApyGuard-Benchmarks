@@ -1,0 +1,49 @@
+name: APY-011-26 Improper Inventory Management - Legacy Admin API
+level: 2
+tags:
+  - api
+  - inventory
+  - legacy
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      Deprecated v1 admin endpoint remains exposed with weaker authorization than v2.
+
+x_apyguard:
+  category: improper_inventory_management
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  auth:
+    type: bearer_jwt
+    login_path: /api/auth/login
+    method: POST
+    request_content_type: application/json
+    credentials:
+      email: alice@example.com
+      password: alice123
+    token_response_path: access_token
+    token_type_response_path: token_type
+    authorization_header: Authorization
+    authorization_prefix: Bearer
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Improper Inventory Management
+    primary_endpoint: /api/v1/admin/reports
+    primary_method: GET
+
+  seed_users:
+    - email: alice@example.com
+      password: alice123
+      role: support
+    - email: admin@apy.local
+      password: AdminLegacy!
+      role: admin
+
+  ports:
+    internal: 80
+    preferred_host: 18013

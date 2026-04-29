@@ -1,0 +1,46 @@
+name: APY-018-26 Token Scope Confusion - Billing API
+level: 2
+tags:
+  - api
+  - authorization
+  - scope
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      JWT scope checks are too loose, allowing profile-scoped tokens to access billing-sensitive endpoints.
+
+x_apyguard:
+  category: token_scope_confusion
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  auth:
+    type: bearer_jwt
+    login_path: /api/auth/login
+    method: POST
+    request_content_type: application/json
+    credentials:
+      email: alice@example.com
+      password: alice123
+    token_response_path: access_token
+    token_type_response_path: token_type
+    authorization_header: Authorization
+    authorization_prefix: Bearer
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Token Scope Confusion
+    primary_endpoint: /api/billing/ledger
+    primary_method: GET
+
+  seed_users:
+    - email: alice@example.com
+      password: alice123
+      role: member
+
+  ports:
+    internal: 80
+    preferred_host: 18022

@@ -1,0 +1,46 @@
+﻿name: APY-030-26 Decimal-IP SSRF Bypass - Integrations API
+level: 3
+tags:
+  - ssrf
+  - api
+  - parser_confusion
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      SSRF protections block literal metadata hosts but can be bypassed with decimal IP encoding.
+
+x_apyguard:
+  category: ssrf
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  auth:
+    type: bearer_jwt
+    login_path: /api/auth/login
+    method: POST
+    request_content_type: application/json
+    credentials:
+      email: alice@example.com
+      password: alice123
+    token_response_path: access_token
+    token_type_response_path: token_type
+    authorization_header: Authorization
+    authorization_prefix: Bearer
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Decimal-IP SSRF Bypass
+    primary_endpoint: /api/integrations/fetch
+    primary_method: POST
+
+  seed_users:
+    - email: alice@example.com
+      password: alice123
+      role: member
+
+  ports:
+    internal: 80
+    preferred_host: 56451

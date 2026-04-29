@@ -1,0 +1,29 @@
+name: APY-012-26 NoSQL Injection - Auth API
+level: 3
+tags:
+  - api
+  - injection
+  - nosql
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      Authentication query logic accepts Mongo-style operators from user input
+      enabling credential bypass.
+
+x_apyguard:
+  category: nosql_injection
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  expected:
+    win_condition: flag
+    vulnerability_type: NoSQL Injection
+    primary_endpoint: /api/auth/login
+    primary_method: POST
+
+  ports:
+    internal: 80
+    preferred_host: 18015

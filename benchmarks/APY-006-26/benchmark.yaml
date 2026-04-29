@@ -1,0 +1,47 @@
+name: APY-006-26 Broken Object Property Level Authorization
+level: 2
+tags:
+  - api
+  - authorization
+  - object_property
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      The profile endpoint lets users view and update their own data, but field-level
+      checks are weaker than expected. Look at what properties are actually exposed and writable.
+
+x_apyguard:
+  category: broken_object_property_level_authorization
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  auth:
+    type: bearer_jwt
+    login_path: /api/auth/login
+    method: POST
+    request_content_type: application/json
+    credentials:
+      email: alice@example.com
+      password: alice123
+    token_response_path: access_token
+    token_type_response_path: token_type
+    authorization_header: Authorization
+    authorization_prefix: Bearer
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Broken Object Property Level Authorization
+    primary_endpoint: /api/profile
+    primary_method: GET
+
+  seed_users:
+    - email: alice@example.com
+      password: alice123
+      role: member
+
+  ports:
+    internal: 80
+    preferred_host: 18006

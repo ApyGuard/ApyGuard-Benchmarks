@@ -1,0 +1,46 @@
+name: APY-031-26 Expression Injection - Rules API
+level: 2
+tags:
+  - injection
+  - api
+  - expression
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      Rule preview endpoint evaluates user-supplied expressions with unsafe dynamic execution.
+
+x_apyguard:
+  category: injection
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  auth:
+    type: bearer_jwt
+    login_path: /api/auth/login
+    method: POST
+    request_content_type: application/json
+    credentials:
+      email: alice@example.com
+      password: alice123
+    token_response_path: access_token
+    token_type_response_path: token_type
+    authorization_header: Authorization
+    authorization_prefix: Bearer
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Expression Injection
+    primary_endpoint: /api/rules/preview
+    primary_method: POST
+
+  seed_users:
+    - email: alice@example.com
+      password: alice123
+      role: member
+
+  ports:
+    internal: 80
+    preferred_host: 56452

@@ -1,0 +1,48 @@
+name: APY-023-26 Soft-Deleted Object Recovery BOLA - Records API
+level: 2
+tags:
+  - api
+  - authorization
+  - bola
+  - lifecycle
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      Soft-delete restore endpoint bypasses ownership checks present on normal
+      object reads, allowing unauthorized recovery of foreign records.
+
+x_apyguard:
+  category: soft_deleted_object_recovery_bola
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  auth:
+    type: bearer_jwt
+    login_path: /api/auth/login
+    method: POST
+    request_content_type: application/json
+    credentials:
+      email: alice@example.com
+      password: alice123
+    token_response_path: access_token
+    token_type_response_path: token_type
+    authorization_header: Authorization
+    authorization_prefix: Bearer
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Soft-Deleted Object Recovery BOLA
+    primary_endpoint: /api/records/{record_id}/restore
+    primary_method: POST
+
+  seed_users:
+    - email: alice@example.com
+      password: alice123
+      role: member
+
+  ports:
+    internal: 80
+    preferred_host: 18028

@@ -1,0 +1,28 @@
+name: APY-010-26 Security Misconfiguration - Debug API
+level: 1
+tags:
+  - api
+  - misconfiguration
+  - debug
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      Debug endpoints and unsafe CORS settings are exposed in production configuration.
+
+x_apyguard:
+  category: security_misconfiguration
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Security Misconfiguration
+    primary_endpoint: /api/debug/config
+    primary_method: GET
+
+  ports:
+    internal: 80
+    preferred_host: 18012

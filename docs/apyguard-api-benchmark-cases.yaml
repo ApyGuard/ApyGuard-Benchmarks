@@ -1,0 +1,269 @@
+benchmarks:
+  - id: APY-001-26
+    name: BOLA - Order Management API
+    level: 1
+    tags: [idor, api, jwt]
+    category: broken_object_level_authorization
+    vulnerability_type: BOLA
+    primary_endpoint: GET /api/orders/{order_id}
+  - id: APY-002-26
+    name: BFLA - Support Admin API
+    level: 2
+    tags: [broken_access_control, api, jwt]
+    category: broken_function_level_authorization
+    vulnerability_type: BFLA
+    primary_endpoint: POST /api/admin/export
+  - id: APY-003-26
+    name: Mass Assignment - Workspace API
+    level: 2
+    tags: [mass_assignment, api, jwt]
+    category: mass_assignment
+    vulnerability_type: Mass Assignment
+    primary_endpoint: PATCH /api/me
+  - id: APY-004-26
+    name: JWT Forgery - Partner API
+    level: 3
+    tags: [jwt, api, broken_authentication]
+    category: jwt_forgery
+    vulnerability_type: JWT alg=none acceptance
+    primary_endpoint: GET /api/partner/billing
+  - id: APY-005-26
+    name: SQL Injection - Reports API
+    level: 3
+    tags: [sqli, api, jwt]
+    category: sql_injection
+    vulnerability_type: SQL Injection
+    primary_endpoint: GET /api/reports/search
+  - id: APY-006-26
+    name: Broken Object Property Level Authorization
+    level: 2
+    tags: [api, authorization, object_property]
+    category: broken_object_property_level_authorization
+    vulnerability_type: Broken Object Property Level Authorization
+    primary_endpoint: GET /api/profile
+  - id: APY-007-26
+    name: Excessive Data Exposure
+    level: 2
+    tags: [api, data_exposure, privacy]
+    category: excessive_data_exposure
+    vulnerability_type: Excessive Data Exposure
+    primary_endpoint: GET /api/account/summary
+  - id: APY-008-26
+    name: Business Flow Abuse - Coupon API
+    level: 2
+    tags: [api, business_logic, abuse]
+    category: sensitive_business_flow_abuse
+    vulnerability_type: Sensitive Business Flow Abuse
+    primary_endpoint: POST /api/coupons/redeem
+  - id: APY-009-26
+    name: SSRF - Integration Fetch API
+    level: 3
+    tags: [api, ssrf, integrations]
+    category: ssrf
+    vulnerability_type: SSRF
+    primary_endpoint: POST /api/integrations/fetch
+  - id: APY-010-26
+    name: Security Misconfiguration - Debug API
+    level: 1
+    tags: [api, misconfiguration, debug]
+    category: security_misconfiguration
+    vulnerability_type: Security Misconfiguration
+    primary_endpoint: GET /api/debug/config
+  - id: APY-011-26
+    name: Improper Inventory Management - Legacy Admin API
+    level: 2
+    tags: [api, inventory, legacy]
+    category: improper_inventory_management
+    vulnerability_type: Improper Inventory Management
+    primary_endpoint: GET /api/v1/admin/reports
+  - id: APY-012-26
+    name: NoSQL Injection - Auth API
+    level: 3
+    tags: [api, injection, nosql]
+    category: nosql_injection
+    vulnerability_type: NoSQL Injection
+    primary_endpoint: POST /api/auth/login
+  - id: APY-013-26
+    name: File Upload Abuse - Path Traversal Download
+    level: 2
+    tags: [api, file_upload, traversal]
+    category: file_upload_abuse
+    vulnerability_type: File Upload Abuse / Path Traversal
+    primary_endpoint: GET /api/files/download
+  - id: APY-014-26
+    name: Chained Exploit - BOLA to Account Takeover
+    level: 3
+    tags: [api, chained, authorization]
+    category: chained_attack
+    vulnerability_type: Chained Exploit
+    primary_endpoint: GET /api/orders/{order_id}
+  - id: APY-015-26
+    name: Multi-Tenant BOLA - Invoice API
+    level: 2
+    tags: [api, authorization, bola, multi_tenant]
+    category: multi_tenant_bola
+    vulnerability_type: Multi-Tenant BOLA
+    primary_endpoint: GET /api/tenants/{tenant_id}/invoices/{invoice_id}
+  - id: APY-016-26
+    name: Bulk Authorization Gap - Orders API
+    level: 2
+    tags: [api, authorization, bola, bulk]
+    category: bulk_authorization_gap
+    vulnerability_type: Bulk Authorization Gap
+    primary_endpoint: POST /api/orders/bulk-export
+  - id: APY-017-26
+    name: Method-Level Authorization Mismatch - Profile API
+    level: 2
+    tags: [api, authorization, method_mismatch]
+    category: method_level_authorization_mismatch
+    vulnerability_type: Method-Level Authorization Mismatch
+    primary_endpoint: PATCH /api/profiles/{user_id}
+  - id: APY-018-26
+    name: Token Scope Confusion - Billing API
+    level: 2
+    tags: [api, authorization, scope]
+    category: token_scope_confusion
+    vulnerability_type: Token Scope Confusion
+    primary_endpoint: GET /api/billing/ledger
+  - id: APY-019-26
+    name: Policy Shadowing Route Conflict - Admin API
+    level: 2
+    tags: [api, authorization, routing]
+    category: policy_shadowing_route_conflict
+    vulnerability_type: Policy Shadowing Route Conflict
+    primary_endpoint: POST /api/users/{user_id}/admin/export
+  - id: APY-020-26
+    name: Wildcard Role Matching - Audit API
+    level: 2
+    tags: [api, authorization, rbac]
+    category: wildcard_role_matching
+    vulnerability_type: Wildcard Role Matching
+    primary_endpoint: GET /api/audit/admin/logs
+  - id: APY-021-26
+    name: Delegation Token Scope Escalation - API Key Service
+    level: 3
+    tags: [api, authorization, scope, delegation]
+    category: delegation_token_scope_escalation
+    vulnerability_type: Delegation Token Scope Escalation
+    primary_endpoint: POST /api/keys/delegate
+  - id: APY-022-26
+    name: Ownership Transfer Bypass - Projects API
+    level: 2
+    tags: [api, authorization, ownership]
+    category: ownership_transfer_bypass
+    vulnerability_type: Ownership Transfer Bypass
+    primary_endpoint: POST /api/projects/{project_id}/transfer
+  - id: APY-023-26
+    name: Soft-Deleted Object Recovery BOLA - Records API
+    level: 2
+    tags: [api, authorization, bola, lifecycle]
+    category: soft_deleted_object_recovery_bola
+    vulnerability_type: Soft-Deleted Object Recovery BOLA
+    primary_endpoint: POST /api/records/{record_id}/restore
+  - id: APY-024-26
+    name: Tenant Filter Isolation Bypass - Billing API
+    level: 2
+    tags: [multi_tenant, api, bola]
+    category: broken_object_level_authorization
+    vulnerability_type: Tenant Isolation Bypass
+    primary_endpoint: GET /api/invoices
+  - id: APY-025-26
+    name: Async Job Authorization - Reporting API
+    level: 2
+    tags: [authorization, api, idor]
+    category: broken_object_level_authorization
+    vulnerability_type: Async Job Authorization
+    primary_endpoint: GET /api/jobs/result
+  - id: APY-026-26
+    name: Upload Metadata Privilege Abuse - Files API
+    level: 2
+    tags: [bopla, api, file_upload]
+    category: broken_object_property_level_authorization
+    vulnerability_type: Upload Metadata Privilege Abuse
+    primary_endpoint: POST /api/files/upload
+  - id: APY-027-26
+    name: Admin Route Guard Parity Gap - Discovery API
+    level: 1
+    tags: [discovery, api, authorization]
+    category: broken_function_level_authorization
+    vulnerability_type: Route Guard Parity Gap
+    primary_endpoint: GET /api/internal/admin/stats
+  - id: APY-028-26
+    name: NoSQL Operator Injection - Search API
+    level: 2
+    tags: [nosql, api, injection]
+    category: injection
+    vulnerability_type: NoSQL Operator Injection
+    primary_endpoint: GET /api/search
+  - id: APY-029-26
+    name: Numeric Notation Limit Bypass - Analytics API
+    level: 2
+    tags: [resource_consumption, api, abuse]
+    category: unrestricted_resource_consumption
+    vulnerability_type: Numeric Notation Limit Bypass
+    primary_endpoint: GET /api/analytics/export
+  - id: APY-030-26
+    name: Decimal-IP SSRF Bypass - Integrations API
+    level: 3
+    tags: [ssrf, api, parser_confusion]
+    category: ssrf
+    vulnerability_type: Decimal-IP SSRF Bypass
+    primary_endpoint: POST /api/integrations/fetch
+  - id: APY-031-26
+    name: Expression Injection - Rules API
+    level: 2
+    tags: [injection, api, expression]
+    category: injection
+    vulnerability_type: Expression Injection
+    primary_endpoint: POST /api/rules/preview
+  - id: APY-032-26
+    name: SQL Injection Column Selection - Ledger API
+    level: 3
+    tags: [sqli, api, injection]
+    category: sql_injection
+    vulnerability_type: SQL Injection Column Selection
+    primary_endpoint: GET /api/ledger/export
+  - id: APY-033-26
+    name: Command Injection in Diagnostics - Tools API
+    level: 2
+    tags: [command_injection, api, injection]
+    category: injection
+    vulnerability_type: Command Injection
+    primary_endpoint: POST /api/tools/resolve
+  - id: APY-034-26
+    name: Server-Side Template Injection - Messaging API
+    level: 2
+    tags: [ssti, api, injection]
+    category: injection
+    vulnerability_type: Server-Side Template Injection
+    primary_endpoint: POST /api/messages/preview
+  - id: APY-035-26
+    name: XXE Import - Catalog API
+    level: 3
+    tags: [xxe, api, xml]
+    category: injection
+    vulnerability_type: XXE Import
+    primary_endpoint: POST /api/catalog/import
+  - id: APY-036-26
+    name: Duplicate Parameter Pollution - Projects API
+    level: 2
+    tags: [parameter_pollution, api, parser_confusion]
+    category: broken_object_level_authorization
+    vulnerability_type: Duplicate Parameter Pollution
+    primary_endpoint: GET /api/projects/export
+
+owasp_api_2023_non_authorization:
+  api2_broken_authentication:
+    - APY-004-26
+  api4_unrestricted_resource_consumption:
+    - APY-029-26
+  api6_unrestricted_access_to_sensitive_business_flows:
+    - APY-008-26
+  api7_ssrf:
+    - APY-009-26
+    - APY-030-26
+  api8_security_misconfiguration:
+    - APY-010-26
+  api9_improper_inventory_management:
+    - APY-011-26
+  api10_unsafe_consumption_of_apis:

@@ -1,0 +1,49 @@
+name: APY-025-26 Async Job Authorization - Reporting API
+level: 2
+tags:
+  - authorization
+  - api
+  - idor
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      Access or manipulate asynchronous job status/results belonging to other users by tampering with job identifiers.
+
+x_apyguard:
+  category: broken_object_level_authorization
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  auth:
+    type: bearer_jwt
+    login_path: /api/auth/login
+    method: POST
+    request_content_type: application/json
+    credentials:
+      email: alice@example.com
+      password: alice123
+    token_response_path: access_token
+    token_type_response_path: token_type
+    authorization_header: Authorization
+    authorization_prefix: Bearer
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Async Job Authorization
+    primary_endpoint: /api/jobs/result
+    primary_method: GET
+
+  seed_users:
+    - email: alice@example.com
+      password: alice123
+      role: user
+    - email: bob@example.com
+      password: bob123
+      role: user
+
+  ports:
+    internal: 80
+    preferred_host: 56443

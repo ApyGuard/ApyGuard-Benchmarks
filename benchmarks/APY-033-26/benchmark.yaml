@@ -1,0 +1,47 @@
+name: APY-033-26 Command Injection in Diagnostics - Tools API
+level: 2
+tags:
+  - command_injection
+  - api
+  - injection
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      Diagnostics endpoint shells out with untrusted hostname input
+      enabling command chaining and filesystem disclosure.
+
+x_apyguard:
+  category: injection
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  auth:
+    type: bearer_jwt
+    login_path: /api/auth/login
+    method: POST
+    request_content_type: application/json
+    credentials:
+      email: alice@example.com
+      password: alice123
+    token_response_path: access_token
+    token_type_response_path: token_type
+    authorization_header: Authorization
+    authorization_prefix: Bearer
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Command Injection
+    primary_endpoint: /api/tools/resolve
+    primary_method: POST
+
+  seed_users:
+    - email: alice@example.com
+      password: alice123
+      role: member
+
+  ports:
+    internal: 80
+    preferred_host: 56455

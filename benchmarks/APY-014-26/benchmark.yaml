@@ -1,0 +1,50 @@
+name: APY-014-26 Chained Exploit - BOLA to Account Takeover
+level: 3
+tags:
+  - api
+  - chained
+  - authorization
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      Multi-step exploit combining object authorization failure with password-reset token abuse
+      to achieve admin takeover.
+
+x_apyguard:
+  category: chained_attack
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  auth:
+    type: bearer_jwt
+    login_path: /api/auth/login
+    method: POST
+    request_content_type: application/json
+    credentials:
+      email: alice@example.com
+      password: alice123
+    token_response_path: access_token
+    token_type_response_path: token_type
+    authorization_header: Authorization
+    authorization_prefix: Bearer
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Chained Exploit
+    primary_endpoint: /api/orders/{order_id}
+    primary_method: GET
+
+  seed_users:
+    - email: alice@example.com
+      password: alice123
+      role: member
+    - email: admin@apy.local
+      password: InitialAdmin!
+      role: admin
+
+  ports:
+    internal: 80
+    preferred_host: 18018

@@ -1,0 +1,51 @@
+name: APY-015-26 Multi-Tenant BOLA - Invoice API
+level: 2
+tags:
+  - api
+  - authorization
+  - bola
+  - multi_tenant
+
+content:
+  - kind: description
+    content_type: text/markdown
+    content: >
+      Multi-tenant invoice endpoint authenticates users but fails to enforce tenant ownership
+      allowing cross-tenant object access.
+
+x_apyguard:
+  category: multi_tenant_bola
+  openapi_path: /openapi.json
+  docs_path: /docs
+  health_path: /ping
+
+  auth:
+    type: bearer_jwt
+    login_path: /api/auth/login
+    method: POST
+    request_content_type: application/json
+    credentials:
+      email: alice@example.com
+      password: alice123
+    token_response_path: access_token
+    token_type_response_path: token_type
+    authorization_header: Authorization
+    authorization_prefix: Bearer
+
+  expected:
+    win_condition: flag
+    vulnerability_type: Multi-Tenant BOLA
+    primary_endpoint: /api/tenants/{tenant_id}/invoices/{invoice_id}
+    primary_method: GET
+
+  seed_users:
+    - email: alice@example.com
+      password: alice123
+      role: member
+    - email: bob@beta.local
+      password: bob123
+      role: member
+
+  ports:
+    internal: 80
+    preferred_host: 18019
