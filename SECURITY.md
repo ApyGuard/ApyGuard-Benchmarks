@@ -170,6 +170,8 @@ It is not intended for general-purpose application deployment.
 
 ## Security Contact
 
+Security maintainer: Eren Kaan ÇAKIR
+
 For sensitive disclosures, you may also contact:
 
 - Email: security@apyguard.com

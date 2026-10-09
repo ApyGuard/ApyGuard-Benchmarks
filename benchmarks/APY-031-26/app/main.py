@@ -9,67 +9,67 @@ from pydantic import BaseModel, Field
 SECRET_KEY = "apyguard-rules-042"
 ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-bearer = HTTPBearer
+bearer = HTTPBearer()
 
 _VALIDATION_ERROR_JSON_EXAMPLES = {
     "validation_error": {
-        "summary": "Validation error"
-        "description": "Typical FastAPI HTTP 422 validation payload."
+        "summary": "Validation error",
+        "description": "Typical FastAPI HTTP 422 validation payload.",
         "value": {
             "detail": [
                 {
-                    "type": "missing"
-                    "loc": ["body", "email"]
-                    "msg": "Field required"
-                    "input": None
-                }
-            ]
-        }
-    }
+                    "type": "missing",
+                    "loc": ["body", "email"],
+                    "msg": "Field required",
+                    "input": None,
+                },
+            ],
+        },
+    },
 }
 
 _PREVIEW_VALIDATION_ERROR_JSON_EXAMPLES = {
     "validation_error": {
-        "summary": "Validation error"
-        "description": "Typical FastAPI HTTP 422 validation payload for the preview body."
+        "summary": "Validation error",
+        "description": "Typical FastAPI HTTP 422 validation payload for the preview body.",
         "value": {
             "detail": [
                 {
-                    "type": "missing"
-                    "loc": ["body", "expression"]
-                    "msg": "Field required"
-                    "input": {}
-                }
-            ]
-        }
-    }
+                    "type": "missing",
+                    "loc": ["body", "expression"],
+                    "msg": "Field required",
+                    "input": {},
+                },
+            ],
+        },
+    },
 }
 
 _LOGIN_OPENAPI_RESPONSES = {
     422: {
-        "description": "Request body failed validation."
-        "content": {"application/json": {"examples": _VALIDATION_ERROR_JSON_EXAMPLES}}
-    }
+        "description": "Request body failed validation.",
+        "content": {"application/json": {"examples": _VALIDATION_ERROR_JSON_EXAMPLES}},
+    },
 }
 
 _PREVIEW_OPENAPI_RESPONSES = {
     422: {
-        "description": "Request body failed validation."
-        "content": {"application/json": {"examples": _PREVIEW_VALIDATION_ERROR_JSON_EXAMPLES}}
-    }
+        "description": "Request body failed validation.",
+        "content": {"application/json": {"examples": _PREVIEW_VALIDATION_ERROR_JSON_EXAMPLES}},
+    },
 }
 
 app = FastAPI(
-    title="ApyGuard Rules API"
-    version="1.0.0"
+    title="ApyGuard Rules API",
+    version="1.0.0",
     description=(
         "Rule preview benchmark: **expression** is evaluated with Python **eval** under a weak filter."
-    )
+    ),
     openapi_tags=[
-        {"name": "Health", "description": "Liveness and connectivity checks."}
-        {"name": "Authentication", "description": "Obtain bearer tokens."}
-        {"name": "Rules", "description": "Expression preview."}
-    ]
+        {"name": "Health", "description": "Liveness and connectivity checks."},
+        {"name": "Authentication", "description": "Obtain bearer tokens."},
+        {"name": "Rules", "description": "Expression preview."},
+    ],
 )
 
 USERS = {}
@@ -82,8 +82,8 @@ class LoginRequest(BaseModel):
 
     model_config = {
         "json_schema_extra": {
-            "example": {"email": "alice@example.com", "password": "alice123"}
-        }
+            "example": {"email": "alice@example.com", "password": "alice123"},
+        },
     }
 
 
@@ -93,10 +93,10 @@ class RulePreviewRequest(BaseModel):
     model_config = {
         "json_schema_extra": {
             "examples": [
-                {"expression": "1 + 1"}
-                {"expression": "flag"}
-            ]
-        }
+                {"expression": "1 + 1"},
+                {"expression": "flag"},
+            ],
+        },
     }
 
 
@@ -113,42 +113,42 @@ def current_claims(credentials: HTTPAuthorizationCredentials = Depends(bearer)):
 
 
 @app.on_event("startup")
-def startup -> None:
+def startup() -> None:
     global USERS, FLAG
     with open("/flag.txt", encoding="utf-8") as handle:
-        FLAG = handle.read.strip
+        FLAG = handle.read().strip()
 
     USERS = {
-        "alice@example.com": {"password_hash": pwd_context.hash("alice123"), "role": "member"}
+        "alice@example.com": {"password_hash": pwd_context.hash("alice123"), "role": "member"},
     }
 
 
 @app.get(
-    "/ping"
-    tags=["Health"]
-    summary="Liveness probe"
-    description="Returns a static JSON payload if the process is running."
-    operation_id="ping"
+    "/ping",
+    tags=["Health"],
+    summary="Liveness probe",
+    description="Returns a static JSON payload if the process is running.",
+    operation_id="ping",
 )
-def ping:
+def ping():
     return {"ping": "pong"}
 
 
 @app.post(
-    "/api/auth/login"
-    tags=["Authentication"]
-    summary="Issue an access token"
-    operation_id="loginForAccessToken"
-    responses=_LOGIN_OPENAPI_RESPONSES
+    "/api/auth/login",
+    tags=["Authentication"],
+    summary="Issue an access token",
+    operation_id="loginForAccessToken",
+    responses=_LOGIN_OPENAPI_RESPONSES,
 )
 def login(
     payload: LoginRequest = Body(
-        ...
-        description="JSON request body (**application/json**) with **email** and **password** for obtaining a bearer access token."
+        ...,
+        description="JSON request body (**application/json**) with **email** and **password** for obtaining a bearer access token.",
         openapi_examples={
-            "alice": {"value": {"email": "alice@example.com", "password": "alice123"}}
-        }
-    )
+            "alice": {"value": {"email": "alice@example.com", "password": "alice123"}},
+        },
+    ),
 ):
     user = USERS.get(payload.email)
     if not user or not pwd_context.verify(payload.password, user["password_hash"]):
@@ -157,27 +157,27 @@ def login(
 
 
 @app.post(
-    "/api/rules/preview"
-    tags=["Rules"]
-    summary="Preview rule expression"
-    description="Evaluates **expression** with **flag** in scope (unsafe)."
-    operation_id="previewRuleExpression"
-    responses=_PREVIEW_OPENAPI_RESPONSES
+    "/api/rules/preview",
+    tags=["Rules"],
+    summary="Preview rule expression",
+    description="Evaluates **expression** with **flag** in scope (unsafe).",
+    operation_id="previewRuleExpression",
+    responses=_PREVIEW_OPENAPI_RESPONSES,
 )
 def preview_rule(
     payload: RulePreviewRequest = Body(
-        ...
-        description="JSON body with **expression** string."
+        ...,
+        description="JSON body with **expression** string.",
         openapi_examples={
-            "add": {"value": {"expression": "1 + 2"}}
-        }
-    )
-    claims=Depends(current_claims)
+            "add": {"value": {"expression": "1 + 2"}},
+        },
+    ),
+    claims=Depends(current_claims),
 ):
     if claims.get("sub") not in USERS:
         raise HTTPException(status_code=401, detail="Unknown principal")
 
-    expr = payload.expression.strip
+    expr = payload.expression.strip()
     if len(expr) > 180:
         raise HTTPException(status_code=400, detail="Expression too long")
 
@@ -194,14 +194,14 @@ def preview_rule(
     return {"status": "ok", "expression": expr, "result": str(result)}
 
 def _apyguard_promote_request_body_descriptions(openapi_schema: dict) -> None:
-    for _path, path_item in openapi_schema.get("paths", {}).items:
-        for _method, op in path_item.items:
+    for _path, path_item in openapi_schema.get("paths", {}).items():
+        for _method, op in path_item.items():
             if not isinstance(op, dict):
                 continue
             rb = op.get("requestBody")
             if not rb or rb.get("description"):
                 continue
-            for _mt, med in rb.get("content", {}).items:
+            for _mt, med in rb.get("content", {}).items():
                 sch = med.get("schema") or {}
                 desc = sch.get("description")
                 if desc:
@@ -209,18 +209,18 @@ def _apyguard_promote_request_body_descriptions(openapi_schema: dict) -> None:
                     break
 
 
-def _apyguard_build_openapi:
+def _apyguard_build_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     from fastapi.openapi.utils import get_openapi
 
     openapi_schema = get_openapi(
-        title=app.title
-        version=app.version
-        openapi_version=app.openapi_version
-        description=getattr(app, "description", None)
-        routes=app.routes
-        tags=getattr(app, "openapi_tags", None)
+        title=app.title,
+        version=app.version,
+        openapi_version=app.openapi_version,
+        description=getattr(app, "description", None),
+        routes=app.routes,
+        tags=getattr(app, "openapi_tags", None),
     )
     _apyguard_promote_request_body_descriptions(openapi_schema)
     app.openapi_schema = openapi_schema

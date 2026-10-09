@@ -13,41 +13,41 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 _VALIDATION_ERROR_JSON_EXAMPLES = {
     "validation_error": {
-        "summary": "Validation error"
-        "description": "Typical FastAPI HTTP 422 validation payload."
+        "summary": "Validation error",
+        "description": "Typical FastAPI HTTP 422 validation payload.",
         "value": {
             "detail": [
                 {
-                    "type": "missing"
-                    "loc": ["body", "email"]
-                    "msg": "Field required"
-                    "input": None
-                }
-            ]
-        }
-    }
+                    "type": "missing",
+                    "loc": ["body", "email"],
+                    "msg": "Field required",
+                    "input": None,
+                },
+            ],
+        },
+    },
 }
 
 _LOGIN_OPENAPI_RESPONSES = {
     422: {
-        "description": "Request body failed validation."
-        "content": {"application/json": {"examples": _VALIDATION_ERROR_JSON_EXAMPLES}}
-    }
+        "description": "Request body failed validation.",
+        "content": {"application/json": {"examples": _VALIDATION_ERROR_JSON_EXAMPLES}},
+    },
 }
 
 app = FastAPI(
-    title="ApyGuard Search API"
-    version="1.0.0"
+    title="ApyGuard Search API",
+    version="1.0.0",
     description=(
         "Search benchmark: **filter** JSON may include NoSQL-style operator objects for **owner** matching."
-    )
+    ),
     openapi_tags=[
-        {"name": "Health", "description": "Liveness and connectivity checks."}
-        {"name": "Authentication", "description": "Obtain bearer tokens."}
-        {"name": "Search", "description": "Document search with JSON filter."}
-    ]
+        {"name": "Health", "description": "Liveness and connectivity checks."},
+        {"name": "Authentication", "description": "Obtain bearer tokens."},
+        {"name": "Search", "description": "Document search with JSON filter."},
+    ],
 )
-bearer = HTTPBearer
+bearer = HTTPBearer()
 
 USERS = {}
 RECORDS = []
@@ -59,8 +59,8 @@ class LoginRequest(BaseModel):
 
     model_config = {
         "json_schema_extra": {
-            "example": {"email": "alice@example.com", "password": "alice123"}
-        }
+            "example": {"email": "alice@example.com", "password": "alice123"},
+        },
     }
 
 
@@ -87,46 +87,46 @@ def match_owner(record: dict, owner_filter):
 
 
 @app.on_event("startup")
-def startup -> None:
+def startup() -> None:
     global USERS, RECORDS
     with open("/flag.txt", encoding="utf-8") as handle:
-        flag = handle.read.strip
+        flag = handle.read().strip()
 
     USERS = {
-        "alice@example.com": {"password_hash": pwd_context.hash("alice123")}
+        "alice@example.com": {"password_hash": pwd_context.hash("alice123")},
     }
     RECORDS = [
-        {"id": 1, "owner": "alice@example.com", "body": "normal document"}
-        {"id": 2, "owner": "admin@apy.local", "body": flag}
+        {"id": 1, "owner": "alice@example.com", "body": "normal document"},
+        {"id": 2, "owner": "admin@apy.local", "body": flag},
     ]
 
 
 @app.get(
-    "/ping"
-    tags=["Health"]
-    summary="Liveness probe"
-    description="Returns a static JSON payload if the process is running."
-    operation_id="ping"
+    "/ping",
+    tags=["Health"],
+    summary="Liveness probe",
+    description="Returns a static JSON payload if the process is running.",
+    operation_id="ping",
 )
-def ping:
+def ping():
     return {"ping": "pong"}
 
 
 @app.post(
-    "/api/auth/login"
-    tags=["Authentication"]
-    summary="Issue an access token"
-    operation_id="loginForAccessToken"
-    responses=_LOGIN_OPENAPI_RESPONSES
+    "/api/auth/login",
+    tags=["Authentication"],
+    summary="Issue an access token",
+    operation_id="loginForAccessToken",
+    responses=_LOGIN_OPENAPI_RESPONSES,
 )
 def login(
     payload: LoginRequest = Body(
-        ...
-        description="JSON request body (**application/json**) with **email** and **password** for obtaining a bearer access token."
+        ...,
+        description="JSON request body (**application/json**) with **email** and **password** for obtaining a bearer access token.",
         openapi_examples={
-            "alice": {"value": {"email": "alice@example.com", "password": "alice123"}}
-        }
-    )
+            "alice": {"value": {"email": "alice@example.com", "password": "alice123"}},
+        },
+    ),
 ):
     user = USERS.get(payload.email)
     if not user or not pwd_context.verify(payload.password, user["password_hash"]):
@@ -135,18 +135,18 @@ def login(
 
 
 @app.get(
-    "/api/search"
-    tags=["Search"]
-    summary="Search records"
-    description="JSON string **filter** with **owner** key; operators like **$ne** are accepted."
-    operation_id="searchRecords"
+    "/api/search",
+    tags=["Search"],
+    summary="Search records",
+    description="JSON string **filter** with **owner** key; operators like **$ne** are accepted.",
+    operation_id="searchRecords",
 )
 def search(
     filter: str = Query(
-        default='{"owner":"alice@example.com"}'
-        description='JSON object string, e.g. `{"owner":"alice@example.com"}` or `{"owner":{"$ne":""}}`.'
-    )
-    claims=Depends(current_claims)
+        default='{"owner":"alice@example.com"}',
+        description='JSON object string, e.g. `{"owner":"alice@example.com"}` or `{"owner":{"$ne":""}}`.',
+    ),
+    claims=Depends(current_claims),
 ):
     try:
         parsed = json.loads(filter)
@@ -159,14 +159,14 @@ def search(
     return {"items": matches}
 
 def _apyguard_promote_request_body_descriptions(openapi_schema: dict) -> None:
-    for _path, path_item in openapi_schema.get("paths", {}).items:
-        for _method, op in path_item.items:
+    for _path, path_item in openapi_schema.get("paths", {}).items():
+        for _method, op in path_item.items():
             if not isinstance(op, dict):
                 continue
             rb = op.get("requestBody")
             if not rb or rb.get("description"):
                 continue
-            for _mt, med in rb.get("content", {}).items:
+            for _mt, med in rb.get("content", {}).items():
                 sch = med.get("schema") or {}
                 desc = sch.get("description")
                 if desc:
@@ -174,18 +174,18 @@ def _apyguard_promote_request_body_descriptions(openapi_schema: dict) -> None:
                     break
 
 
-def _apyguard_build_openapi:
+def _apyguard_build_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     from fastapi.openapi.utils import get_openapi
 
     openapi_schema = get_openapi(
-        title=app.title
-        version=app.version
-        openapi_version=app.openapi_version
-        description=getattr(app, "description", None)
-        routes=app.routes
-        tags=getattr(app, "openapi_tags", None)
+        title=app.title,
+        version=app.version,
+        openapi_version=app.openapi_version,
+        description=getattr(app, "description", None),
+        routes=app.routes,
+        tags=getattr(app, "openapi_tags", None),
     )
     _apyguard_promote_request_body_descriptions(openapi_schema)
     app.openapi_schema = openapi_schema

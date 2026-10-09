@@ -13,32 +13,32 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlencode, unquote, urlsplit
 
 
-ROOT_DIR = Path(__file__).resolve.parents[1]
+ROOT_DIR = Path(__file__).resolve().parents[1]
 BENCHMARKS_DIR = ROOT_DIR / "benchmarks"
 ASSETS_DIR = ROOT_DIR / "assets"
 
 
-def get_host_ip -> str:
+def get_host_ip() -> str:
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.connect(("8.8.8.8", 80))
-        ip = sock.getsockname[0]
-        sock.close
+        ip = sock.getsockname()[0]
+        sock.close()
         return ip
     except OSError:
         try:
-            return socket.gethostbyname(socket.gethostname)
+            return socket.gethostbyname(socket.gethostname())
         except OSError:
             return "127.0.0.1"
 
 
 def run_compose(benchmark_dir: Path, *args: str) -> subprocess.CompletedProcess:
     return subprocess.run(
-        ["docker", "compose", *args]
-        cwd=benchmark_dir
-        capture_output=True
-        text=True
-        check=False
+        ["docker", "compose", *args],
+        cwd=benchmark_dir,
+        capture_output=True,
+        text=True,
+        check=False,
     )
 
 
@@ -93,16 +93,16 @@ class BenchmarkRow:
         return f"http://{self.ip}:{self.port}"
 
 
-def discover_benchmarks -> list[Benchmark]:
+def discover_benchmarks() -> list[Benchmark]:
     benchmarks: list[Benchmark] = []
     for directory in sorted(BENCHMARKS_DIR.glob("APY-*-*")):
         compose_path = directory / "docker-compose.yml"
         benchmark_json = directory / "benchmark.json"
-        if not compose_path.exists:
+        if not compose_path.exists():
             continue
 
         title = directory.name
-        if benchmark_json.exists:
+        if benchmark_json.exists():
             try:
                 metadata = json.loads(benchmark_json.read_text(encoding="utf-8"))
                 title = metadata.get("name", title)
@@ -111,11 +111,11 @@ def discover_benchmarks -> list[Benchmark]:
 
         benchmarks.append(
             Benchmark(
-                benchmark_id=directory.name
-                title=title
-                path=directory
-                port=parse_port_from_compose(compose_path)
-            )
+                benchmark_id=directory.name,
+                title=title,
+                path=directory,
+                port=parse_port_from_compose(compose_path),
+            ),
         )
     return benchmarks
 
@@ -124,7 +124,7 @@ def benchmark_running(benchmark: Benchmark) -> bool:
     result = run_compose(benchmark.path, "ps", "--status", "running", "--services")
     if result.returncode != 0:
         return False
-    return bool(result.stdout.strip)
+    return bool(result.stdout.strip())
 
 
 def start_benchmark(benchmark: Benchmark, port_override: int | None = None) -> tuple[bool, str]:
@@ -136,19 +136,19 @@ def start_benchmark(benchmark: Benchmark, port_override: int | None = None) -> t
 
     flag = f"flag{{{benchmark.benchmark_id}}}"
     build_result = run_compose(
-        benchmark.path
-        "build"
-        "--build-arg"
-        f"FLAG={flag}"
-        "--build-arg"
-        f"flag={flag}"
+        benchmark.path,
+        "build",
+        "--build-arg",
+        f"FLAG={flag}",
+        "--build-arg",
+        f"flag={flag}",
     )
     if build_result.returncode != 0:
-        return False, (build_result.stderr or build_result.stdout or "Build failed").strip
+        return False, (build_result.stderr or build_result.stdout or "Build failed").strip()
 
     up_result = run_compose(benchmark.path, "up", "-d")
     if up_result.returncode != 0:
-        return False, (up_result.stderr or up_result.stdout or "Compose up failed").strip
+        return False, (up_result.stderr or up_result.stdout or "Compose up failed").strip()
 
     return True, f"{benchmark.benchmark_id} started."
 
@@ -156,64 +156,64 @@ def start_benchmark(benchmark: Benchmark, port_override: int | None = None) -> t
 def stop_benchmark(benchmark: Benchmark) -> tuple[bool, str]:
     down_result = run_compose(benchmark.path, "down")
     if down_result.returncode != 0:
-        return False, (down_result.stderr or down_result.stdout or "Compose down failed").strip
+        return False, (down_result.stderr or down_result.stdout or "Compose down failed").strip()
     return True, f"{benchmark.benchmark_id} stopped."
 
 
-def detect_logo_url -> str:
-    if not ASSETS_DIR.exists:
+def detect_logo_url() -> str:
+    if not ASSETS_DIR.exists():
         return ""
 
     image_files = [
         path
-        for path in ASSETS_DIR.iterdir
-        if path.is_file and path.suffix.lower in {".png", ".jpg", ".jpeg", ".svg", ".webp", ".ico"}
+        for path in ASSETS_DIR.iterdir()
+        if path.is_file() and path.suffix.lower() in {".png", ".jpg", ".jpeg", ".svg", ".webp", ".ico"}
     ]
     if not image_files:
         return ""
 
-    preferred = sorted(image_files, key=lambda p: ("logo" not in p.name.lower, p.name.lower))[0]
+    preferred = sorted(image_files, key=lambda p: ("logo" not in p.name.lower(), p.name.lower()))[0]
     return f"/assets/{preferred.name}"
 
 
 def safe_asset_path(asset_name: str) -> Path | None:
-    candidate = (ASSETS_DIR / asset_name).resolve
+    candidate = (ASSETS_DIR / asset_name).resolve()
     try:
-        candidate.relative_to(ASSETS_DIR.resolve)
+        candidate.relative_to(ASSETS_DIR.resolve())
     except ValueError:
         return None
 
-    if not candidate.exists or not candidate.is_file:
+    if not candidate.exists() or not candidate.is_file():
         return None
     return candidate
 
 
-def build_rows -> list[BenchmarkRow]:
-    ip = get_host_ip
+def build_rows() -> list[BenchmarkRow]:
+    ip = get_host_ip()
     rows: list[BenchmarkRow] = []
-    for benchmark in discover_benchmarks:
+    for benchmark in discover_benchmarks():
         rows.append(
             BenchmarkRow(
-                benchmark_id=benchmark.benchmark_id
-                name=benchmark.title
-                port=benchmark.port
-                ip=ip
-                running=benchmark_running(benchmark)
-                has_readme=(benchmark.path / "README.md").exists
-            )
+                benchmark_id=benchmark.benchmark_id,
+                name=benchmark.title,
+                port=benchmark.port,
+                ip=ip,
+                running=benchmark_running(benchmark),
+                has_readme=(benchmark.path / "README.md").exists(),
+            ),
         )
     return rows
 
 
 def safe_benchmark_readme_path(benchmark_id: str) -> Path | None:
-    benchmark_dir = (BENCHMARKS_DIR / benchmark_id).resolve
+    benchmark_dir = (BENCHMARKS_DIR / benchmark_id).resolve()
     try:
-        benchmark_dir.relative_to(BENCHMARKS_DIR.resolve)
+        benchmark_dir.relative_to(BENCHMARKS_DIR.resolve())
     except ValueError:
         return None
 
     readme_path = benchmark_dir / "README.md"
-    if not readme_path.exists or not readme_path.is_file:
+    if not readme_path.exists() or not readme_path.is_file():
         return None
     return readme_path
 
@@ -224,7 +224,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(payload)))
-        self.end_headers
+        self.end_headers()
         self.wfile.write(payload)
 
     def _send_text(self, status: int, text: str, content_type: str) -> None:
@@ -232,31 +232,31 @@ class DashboardHandler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", f"{content_type}; charset=utf-8")
         self.send_header("Content-Length", str(len(payload)))
-        self.end_headers
+        self.end_headers()
         self.wfile.write(payload)
 
     def _send_file(self, status: int, file_path: Path) -> None:
-        payload = file_path.read_bytes
+        payload = file_path.read_bytes()
         mime_type, _ = mimetypes.guess_type(str(file_path))
         self.send_response(status)
         self.send_header("Content-Type", mime_type or "application/octet-stream")
         self.send_header("Content-Length", str(len(payload)))
-        self.end_headers
+        self.end_headers()
         self.wfile.write(payload)
 
     def _redirect(self, message: str, kind: str = "success") -> None:
         params = urlencode({"msg": message, "kind": kind})
         self.send_response(HTTPStatus.SEE_OTHER)
         self.send_header("Location", f"/?{params}")
-        self.end_headers
+        self.end_headers()
 
     def _dashboard_html(self, msg: str = "", kind: str = "success") -> str:
-        rows = build_rows
+        rows = build_rows()
         total = len(rows)
         running = sum(1 for row in rows if row.running)
         stopped = total - running
-        logo_url = detect_logo_url
-        generated_at = datetime.now.strftime("%Y-%m-%d %H:%M:%S")
+        logo_url = detect_logo_url()
+        generated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         run_ratio = int((running / total) * 100) if total else 0
 
         row_html = []
@@ -299,7 +299,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             row_html.append(
                 f"""
                 <tr
-                  data-running="{str(row.running).lower}"
+                  data-running="{str(row.running).lower()}"
                   data-id="{html.escape(row.benchmark_id)}"
                   data-name="{html.escape(row.name)}"
                   data-port="{row.port if row.port is not None else 0}"
@@ -323,7 +323,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     </div>
                   </td>
                 </tr>
-                """
+                """,
             )
 
         notice_html = ""
@@ -372,8 +372,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
       color: var(--text);
       font-family: "Inter", "Segoe UI", Arial, sans-serif;
       background:
-        radial-gradient(circle at 12% 22%, rgba(59, 130, 246, 0.14) 0, transparent 22rem)
-        radial-gradient(circle at 85% -8%, rgba(16, 185, 129, 0.18) 0, transparent 26rem)
+        radial-gradient(circle at 12% 22%, rgba(59, 130, 246, 0.14) 0, transparent 22rem),
+        radial-gradient(circle at 85% -8%, rgba(16, 185, 129, 0.18) 0, transparent 26rem),
         linear-gradient(130deg, var(--background), #f1f5f9);
       min-height: 100vh;
     }}
@@ -608,7 +608,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         <div>
           <p class="eyebrow">ApyGuard Control Center</p>
           <h1>Benchmark Operations Dashboard</h1>
-          <p class="meta">LAN: {html.escape(get_host_ip)} | Updated: {generated_at}</p>
+          <p class="meta">LAN: {html.escape(get_host_ip())} | Updated: {generated_at}</p>
         </div>
       </div>
       <div class="hero-actions">
@@ -705,7 +705,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
   </div>
 
   <script>
-    (function  {{
+    (function () {{
       const searchInput = document.getElementById("searchBox");
       const filterSelect = document.getElementById("statusFilter");
       const sortSelect = document.getElementById("sortBy");
@@ -728,13 +728,13 @@ class DashboardHandler(BaseHTTPRequestHandler):
       let activePortTrigger = null;
       let readmeRequest = null;
 
-      function applyFilters {{
-        const term = (searchInput.value || "").toLowerCase.trim;
+      function applyFilters() {{
+        const term = (searchInput.value || "").toLowerCase().trim();
         const status = filterSelect.value;
         const sortBy = sortSelect.value;
 
         const visibleRows = rows.filter((row) => {{
-          const rowText = row.textContent.toLowerCase;
+          const rowText = row.textContent.toLowerCase();
           const isRunning = row.getAttribute("data-running") === "true";
           const statusMatch = status === "all" || (status === "running" && isRunning) || (status === "stopped" && !isRunning);
           const textMatch = !term || rowText.includes(term);
@@ -743,9 +743,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
         const sorted = visibleRows.sort((a, b) => {{
           const attrMap = {{
-            id: "data-id"
-            name: "data-name"
-            port: "data-port"
+            id: "data-id",
+            name: "data-name",
+            port: "data-port",
             status: "data-status"
           }};
           const attr = attrMap[sortBy] || "data-id";
@@ -778,7 +778,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
       sortSelect.addEventListener("change", applyFilters);
 
       document.querySelectorAll("th button[data-sort]").forEach((btn) => {{
-        btn.addEventListener("click",  => {{
+        btn.addEventListener("click", () => {{
           const key = btn.getAttribute("data-sort");
           if (sortSelect.value === key) {{
             sortDirection = sortDirection === "asc" ? "desc" : "asc";
@@ -786,7 +786,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             sortSelect.value = key;
             sortDirection = "asc";
           }}
-          applyFilters;
+          applyFilters();
         }});
       }});
 
@@ -796,30 +796,30 @@ class DashboardHandler(BaseHTTPRequestHandler):
           refreshTimer = null;
         }}
         if (enabled) {{
-          refreshTimer = window.setInterval( => {{
+          refreshTimer = window.setInterval(() => {{
             window.location.href = "/";
           }}, 15000);
         }}
       }}
 
-      autoRefresh.addEventListener("change",  => setAutoRefresh(autoRefresh.checked));
+      autoRefresh.addEventListener("change", () => setAutoRefresh(autoRefresh.checked));
 
       document.querySelectorAll(".copy-btn").forEach((btn) => {{
-        btn.addEventListener("click", async  => {{
+        btn.addEventListener("click", async () => {{
           const url = btn.getAttribute("data-url");
           try {{
             await navigator.clipboard.writeText(url);
             btn.textContent = "Copied";
-            setTimeout( => (btn.textContent = "Copy URL"), 900);
+            setTimeout(() => (btn.textContent = "Copy URL"), 900);
           }} catch (_err) {{
             alert("Clipboard permission denied. URL: " + url);
           }}
         }});
       }});
 
-      function closeReadmeModal {{
+      function closeReadmeModal() {{
         if (readmeRequest) {{
-          readmeRequest.abort;
+          readmeRequest.abort();
           readmeRequest = null;
         }}
         readmeModal.hidden = true;
@@ -836,10 +836,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
         document.body.style.overflow = "hidden";
 
         if (readmeRequest) {{
-          readmeRequest.abort;
+          readmeRequest.abort();
         }}
 
-        readmeRequest = new AbortController;
+        readmeRequest = new AbortController();
 
         try {{
           const response = await fetch("/benchmarks/" + encodeURIComponent(benchmarkId) + "/readme", {{
@@ -848,7 +848,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
           if (!response.ok) {{
             throw new Error("Failed to load README (" + String(response.status) + ")");
           }}
-          readmeContent.textContent = await response.text;
+          readmeContent.textContent = await response.text();
         }} catch (error) {{
           if (error && error.name === "AbortError") {{
             return;
@@ -860,12 +860,12 @@ class DashboardHandler(BaseHTTPRequestHandler):
       }}
 
       document.querySelectorAll(".readme-btn").forEach((btn) => {{
-        btn.addEventListener("click",  => {{
+        btn.addEventListener("click", () => {{
           openReadmeModal(btn);
         }});
       }});
 
-      function closePortModal {{
+      function closePortModal() {{
         portModal.hidden = true;
         document.body.style.overflow = "";
         activePortTrigger = null;
@@ -879,37 +879,37 @@ class DashboardHandler(BaseHTTPRequestHandler):
         portModalInput.value = currentPort;
         portModal.hidden = false;
         document.body.style.overflow = "hidden";
-        window.setTimeout( => {{
-          portModalInput.focus;
-          portModalInput.select;
+        window.setTimeout(() => {{
+          portModalInput.focus();
+          portModalInput.select();
         }}, 0);
       }}
 
       document.querySelectorAll("[data-edit-port]").forEach((btn) => {{
-        btn.addEventListener("click",  => openPortModal(btn));
+        btn.addEventListener("click", () => openPortModal(btn));
       }});
 
       portModalCancel.addEventListener("click", closePortModal);
       readmeClose.addEventListener("click", closeReadmeModal);
       portModal.addEventListener("click", (event) => {{
         if (event.target === portModal) {{
-          closePortModal;
+          closePortModal();
         }}
       }});
       readmeModal.addEventListener("click", (event) => {{
         if (event.target === readmeModal) {{
-          closeReadmeModal;
+          closeReadmeModal();
         }}
       }});
 
       portModalForm.addEventListener("submit", (event) => {{
-        event.preventDefault;
+        event.preventDefault();
         if (!activePortTrigger) {{
-          closePortModal;
+          closePortModal();
           return;
         }}
 
-        const rawPort = (portModalInput.value || "").trim;
+        const rawPort = (portModalInput.value || "").trim();
         const parsedPort = Number(rawPort);
         if (!rawPort || Number.isNaN(parsedPort) || parsedPort < 1 || parsedPort > 65535) {{
           alert("Port must be between 1 and 65535.");
@@ -974,32 +974,32 @@ class DashboardHandler(BaseHTTPRequestHandler):
           }}
         }}
 
-        closePortModal;
+        closePortModal();
       }});
 
       document.addEventListener("keydown", (event) => {{
         if (event.key === "Escape") {{
           if (!portModal.hidden) {{
-            closePortModal;
+            closePortModal();
             return;
           }}
           if (!readmeModal.hidden) {{
-            closeReadmeModal;
+            closeReadmeModal();
             return;
           }}
           return;
         }}
         if (event.key === "/" && document.activeElement !== searchInput) {{
-          event.preventDefault;
-          searchInput.focus;
+          event.preventDefault();
+          searchInput.focus();
         }}
         if ((event.key === "r" || event.key === "R") && document.activeElement.tagName !== "INPUT") {{
           window.location.href = "/";
         }}
       }});
 
-      applyFilters;
-    }});
+      applyFilters();
+    }})();
   </script>
 </body>
 </html>
@@ -1045,12 +1045,12 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path = urlsplit(unquote(self.path)).path
-        form_data = self._read_form_data
-        benchmarks = {b.benchmark_id: b for b in discover_benchmarks}
+        form_data = self._read_form_data()
+        benchmarks = {b.benchmark_id: b for b in discover_benchmarks()}
 
         if path == "/actions/start-all":
             changed = 0
-            for benchmark in benchmarks.values:
+            for benchmark in benchmarks.values():
                 if not benchmark_running(benchmark):
                     ok, _ = start_benchmark(benchmark)
                     if ok:
@@ -1060,7 +1060,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
         if path == "/actions/stop-all-running":
             changed = 0
-            for benchmark in benchmarks.values:
+            for benchmark in benchmarks.values():
                 if benchmark_running(benchmark):
                     ok, _ = stop_benchmark(benchmark)
                     if ok:
@@ -1073,7 +1073,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self._redirect("Unknown action.", kind="error")
             return
 
-        benchmark_id, action = match.groups
+        benchmark_id, action = match.groups()
         benchmark = benchmarks.get(benchmark_id)
         if not benchmark:
             self._redirect(f"Unknown benchmark: {benchmark_id}", kind="error")
@@ -1081,9 +1081,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
         port_override = None
         if action == "start":
-            port_raw = form_data.get("port", [""])[0].strip
+            port_raw = form_data.get("port", [""])[0].strip()
             if port_raw:
-                if not port_raw.isdigit:
+                if not port_raw.isdigit():
                     self._redirect("Port must be a number.", kind="error")
                     return
                 port_override = int(port_raw)
@@ -1102,14 +1102,14 @@ class DashboardHandler(BaseHTTPRequestHandler):
         self._redirect(message, kind="error")
 
 
-def main -> None:
+def main() -> None:
     host = "0.0.0.0"
     port = 8090
     server = ThreadingHTTPServer((host, port), DashboardHandler)
     print(f"Dashboard listening: http://127.0.0.1:{port}")
-    print(f"LAN access: http://{get_host_ip}:{port}")
-    server.serve_forever
+    print(f"LAN access: http://{get_host_ip()}:{port}")
+    server.serve_forever()
 
 
 if __name__ == "__main__":
-    main
+    main()

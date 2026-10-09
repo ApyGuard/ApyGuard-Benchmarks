@@ -10,41 +10,41 @@ from pydantic import BaseModel, Field
 SECRET_KEY = "apyguard-projects-051"
 ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-bearer = HTTPBearer
+bearer = HTTPBearer()
 
 _VALIDATION_ERROR_JSON_EXAMPLES = {
     "validation_error": {
-        "summary": "Validation error"
-        "description": "Typical FastAPI HTTP 422 validation payload."
+        "summary": "Validation error",
+        "description": "Typical FastAPI HTTP 422 validation payload.",
         "value": {
             "detail": [
                 {
-                    "type": "missing"
-                    "loc": ["body", "email"]
-                    "msg": "Field required"
-                    "input": None
-                }
-            ]
-        }
-    }
+                    "type": "missing",
+                    "loc": ["body", "email"],
+                    "msg": "Field required",
+                    "input": None,
+                },
+            ],
+        },
+    },
 }
 
 _LOGIN_OPENAPI_RESPONSES = {
     422: {
-        "description": "Request body failed validation."
-        "content": {"application/json": {"examples": _VALIDATION_ERROR_JSON_EXAMPLES}}
-    }
+        "description": "Request body failed validation.",
+        "content": {"application/json": {"examples": _VALIDATION_ERROR_JSON_EXAMPLES}},
+    },
 }
 
 app = FastAPI(
-    title="ApyGuard Projects API"
-    version="1.0.0"
-    description="Project export benchmark with duplicate-parameter parser confusion."
+    title="ApyGuard Projects API",
+    version="1.0.0",
+    description="Project export benchmark with duplicate-parameter parser confusion.",
     openapi_tags=[
-        {"name": "Health", "description": "Liveness and connectivity checks."}
-        {"name": "Authentication", "description": "Obtain bearer tokens."}
-        {"name": "Projects", "description": "Project export endpoints."}
-    ]
+        {"name": "Health", "description": "Liveness and connectivity checks."},
+        {"name": "Authentication", "description": "Obtain bearer tokens."},
+        {"name": "Projects", "description": "Project export endpoints."},
+    ],
 )
 
 USERS = {}
@@ -57,11 +57,11 @@ class LoginRequest(BaseModel):
 
 
 ProjectIds = Annotated[
-    list[int]
+    list[int],
     Query(
-        description="Project identifier. Repeat this query parameter to request multiple project ids."
-        examples=[10]
-    )
+        description="Project identifier. Repeat this query parameter to request multiple project ids.",
+        examples=[10],
+    ),
 ]
 
 
@@ -78,43 +78,43 @@ def current_claims(credentials: HTTPAuthorizationCredentials = Depends(bearer)):
 
 
 @app.on_event("startup")
-def startup -> None:
+def startup() -> None:
     global USERS, PROJECTS
     with open("/flag.txt", encoding="utf-8") as handle:
-        flag = handle.read.strip
+        flag = handle.read().strip()
 
     USERS = {
         "alice@example.com": {
-            "password_hash": pwd_context.hash("alice123")
-            "role": "member"
-        }
+            "password_hash": pwd_context.hash("alice123"),
+            "role": "member",
+        },
     }
     PROJECTS = {
-        1: {"id": 1, "owner": "admin@apy.local", "name": "admin-roadmap", "export": flag}
-        10: {"id": 10, "owner": "alice@example.com", "name": "alice-notes", "export": "roadmap"}
+        1: {"id": 1, "owner": "admin@apy.local", "name": "admin-roadmap", "export": flag},
+        10: {"id": 10, "owner": "alice@example.com", "name": "alice-notes", "export": "roadmap"},
     }
 
 
 @app.get("/ping", tags=["Health"], summary="Liveness probe", operation_id="ping")
-def ping:
+def ping():
     return {"ping": "pong"}
 
 
 @app.post(
-    "/api/auth/login"
-    tags=["Authentication"]
-    summary="Issue an access token"
-    operation_id="loginForAccessToken"
-    responses=_LOGIN_OPENAPI_RESPONSES
+    "/api/auth/login",
+    tags=["Authentication"],
+    summary="Issue an access token",
+    operation_id="loginForAccessToken",
+    responses=_LOGIN_OPENAPI_RESPONSES,
 )
 def login(
     payload: LoginRequest = Body(
-        ...
-        description="JSON request body (**application/json**) with **email** and **password**."
+        ...,
+        description="JSON request body (**application/json**) with **email** and **password**.",
         openapi_examples={
-            "alice": {"value": {"email": "alice@example.com", "password": "alice123"}}
-        }
-    )
+            "alice": {"value": {"email": "alice@example.com", "password": "alice123"}},
+        },
+    ),
 ):
     user = USERS.get(payload.email)
     if not user or not pwd_context.verify(payload.password, user["password_hash"]):
@@ -123,10 +123,10 @@ def login(
 
 
 @app.get(
-    "/api/projects/export"
-    tags=["Projects"]
-    summary="Export a project"
-    operation_id="exportProject"
+    "/api/projects/export",
+    tags=["Projects"],
+    summary="Export a project",
+    operation_id="exportProject",
 )
 def export_project(project_id: ProjectIds, claims=Depends(current_claims)):
     values = project_id
@@ -145,24 +145,24 @@ def export_project(project_id: ProjectIds, claims=Depends(current_claims)):
         raise HTTPException(status_code=403, detail="forbidden")
 
     return {
-        "checked_project_id": checked_project_id
+        "checked_project_id": checked_project_id,
         "exported_project": {
-            "id": exported_project["id"]
-            "name": exported_project["name"]
-            "export": exported_project["export"]
-        }
+            "id": exported_project["id"],
+            "name": exported_project["name"],
+            "export": exported_project["export"],
+        },
     }
 
 
 def _apyguard_promote_request_body_descriptions(openapi_schema: dict) -> None:
-    for _path, path_item in openapi_schema.get("paths", {}).items:
-        for _method, op in path_item.items:
+    for _path, path_item in openapi_schema.get("paths", {}).items():
+        for _method, op in path_item.items():
             if not isinstance(op, dict):
                 continue
             rb = op.get("requestBody")
             if not rb or rb.get("description"):
                 continue
-            for _mt, med in rb.get("content", {}).items:
+            for _mt, med in rb.get("content", {}).items():
                 sch = med.get("schema") or {}
                 desc = sch.get("description")
                 if desc:
@@ -170,18 +170,18 @@ def _apyguard_promote_request_body_descriptions(openapi_schema: dict) -> None:
                     break
 
 
-def _apyguard_build_openapi:
+def _apyguard_build_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     from fastapi.openapi.utils import get_openapi
 
     openapi_schema = get_openapi(
-        title=app.title
-        version=app.version
-        openapi_version=app.openapi_version
-        description=getattr(app, "description", None)
-        routes=app.routes
-        tags=getattr(app, "openapi_tags", None)
+        title=app.title,
+        version=app.version,
+        openapi_version=app.openapi_version,
+        description=getattr(app, "description", None),
+        routes=app.routes,
+        tags=getattr(app, "openapi_tags", None),
     )
     _apyguard_promote_request_body_descriptions(openapi_schema)
     app.openapi_schema = openapi_schema

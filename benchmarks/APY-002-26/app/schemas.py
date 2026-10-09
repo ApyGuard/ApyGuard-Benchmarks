@@ -8,10 +8,10 @@ class LoginRequest(BaseModel):
     model_config = {
         "json_schema_extra": {
             "examples": [
-                {"email": "alice@example.com", "password": "alice123"}
-                {"email": "admin@apy.local", "password": "UltraSecretAdmin!"}
-            ]
-        }
+                {"email": "alice@example.com", "password": "alice123"},
+                {"email": "admin@apy.local", "password": "UltraSecretAdmin!"},
+            ],
+        },
     }
 
 
@@ -41,15 +41,15 @@ class TicketResponse(BaseModel):
 
 class AdminExportRequest(BaseModel):
     async_delivery: bool = Field(
-        default=False
-        description="If true, export would be queued for async delivery (behavior may still be synchronous)."
+        default=False,
+        description="If true, export would be queued for async delivery (behavior may still be synchronous).",
     )
 
     model_config = {
         "json_schema_extra": {
             "examples": [
-                {"async_delivery": False}
-                {"async_delivery": True}
-            ]
-        }
+                {"async_delivery": False},
+                {"async_delivery": True},
+            ],
+        },
     }

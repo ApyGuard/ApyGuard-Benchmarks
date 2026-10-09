@@ -7,8 +7,8 @@ class LoginRequest(BaseModel):
 
     model_config = {
         "json_schema_extra": {
-            "example": {"email": "alice@example.com", "password": "alice123"}
-        }
+            "example": {"email": "alice@example.com", "password": "alice123"},
+        },
     }
 
 
@@ -22,15 +22,15 @@ class ProfileUpdateRequest(BaseModel):
     role: str | None = Field(default=None, description="Role value to assign to the current user.")
     plan: str | None = Field(default=None, description="Workspace plan to assign to the current user.")
     workspace_slug: str | None = Field(
-        default=None
-        description="Workspace slug to assign to the current user."
+        default=None,
+        description="Workspace slug to assign to the current user.",
     )
 
     model_config = {
-        "extra": "allow"
+        "extra": "allow",
         "json_schema_extra": {
-            "example": {"role": "admin"}
-        }
+            "example": {"role": "admin"},
+        },
     }
 
 

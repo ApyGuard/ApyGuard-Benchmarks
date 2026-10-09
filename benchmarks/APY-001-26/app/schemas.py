@@ -8,10 +8,10 @@ class LoginRequest(BaseModel):
     model_config = {
         "json_schema_extra": {
             "examples": [
-                {"email": "alice@example.com", "password": "alice123"}
-                {"email": "bob@example.com", "password": "bob123"}
-            ]
-        }
+                {"email": "alice@example.com", "password": "alice123"},
+                {"email": "bob@example.com", "password": "bob123"},
+            ],
+        },
     }
 
 
